@@ -1,1 +1,77 @@
-# 每周总结可以写在这里
+# 第五周总结
+## JavaScript 执行粒度
+
+- JavaScript Context
+    - Realm：一套完整的内置对象
+        - Global Object
+- 宏任务
+- 微任务
+- 函数调用
+    - Execution Context
+        - code evaluation state
+        - Function
+        - Script/Module
+        - Generator
+        - Realm
+        - Lexical Environment
+            - this
+            - new.target
+            - super
+            - 变量
+        - Variable Environment
+    - Environment RecordRecord
+        - Declarative ER
+        - Function ER
+        - Module ER
+        - Global ER
+        - Object ER
+    - Closure 原理
+- 语句/声明
+- 表达式
+- 直接量/变量
+
+## 浏览器工作原理
+
+- 敲下 URL 到页面打开
+    - URL —— HTTP
+    - HTML —— Parse
+    - DOM —— CSS Computing
+    - DOM with CSS —— Layout
+    - DOM with Position —— render
+    - BitMap
+- 七层网络模型
+    - 应用、表示、会话层 —— HTTP
+    - 传输层 —— TCP
+    - 网络层 —— IP
+    - 数据链路、物理层 —— 4G……
+- TCP/IP 基础概念
+    - 流
+    - 端口
+    - 包
+    - IP 地址
+    - require('net')
+    - libnet/libpcap
+- HTTP
+    - request
+    - Request line
+        - method
+            - get
+            - post
+            - options
+        - path
+        - protocol
+    - headers
+        - host
+        - Content-Type
+    - 空行
+    - body
+- response
+    - status line
+        - HTTP/1.1 200 OK
+    - headers
+        - Content-Type
+        - Date
+        - Connection
+        - Transfer-Encoding
+    - 空行
+    - body

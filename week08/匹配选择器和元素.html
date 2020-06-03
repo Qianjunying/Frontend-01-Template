@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="parent" class="box wrapper">
+        <div id="child" class="inner-box content">
+            <p id="para" class="text-box"></p>
+        </div>
+    </div>
+    <script>
+        function matchSelector(selectorStr, node) {
+            const arr = selectorStr.split(' ');
+            arr.reverse();
+
+            let res = matchSingleNode(arr, node)
+            console.log('res', res);
+        }
+
+        function matchSingleNode(arr, node) {
+            if (!arr.length || !node) {
+                return true;
+            }
+            let currSelector = arr.shift();
+            const nodeClassArr = node.getAttribute('class').split(' ');
+            const nodeIdStr = node.getAttribute('id');
+
+            if (currSelector.indexOf('#') >= 0) {
+                const reg = new RegExp(`#${nodeIdStr}(?=('.'|$))`)
+                let matchId = currSelector.match(reg);
+
+                if (matchId) {
+                    currSelector = currSelector.replace(reg, '')
+                } else {
+                    console.log('id 不匹配');
+                    return false;
+                }
+            }
+
+            if (currSelector.indexOf('.') >= 0) {
+                let matchClass = currSelector.match(/\.[\w\-]+(?=\b)/g);
+                let m = matchClass.length && matchClass.every(x => {
+                    x = x.replace('.', '');
+
+                    return nodeClassArr.indexOf(x) !== -1;
+                });
+                if (m) {
+                    currSelector = currSelector.replace(/\.[\w\-]+(?=\b)/g, '');
+                } else {
+                    console.log('class 不匹配');
+                    return false;
+                }
+            }
+
+            if (currSelector) {
+                if (node.tagName && currSelector === node.tagName.toLowerCase()) {
+                    currSelector = '';
+                } else {
+                    console.log('tag 不匹配');
+                    return false;
+                }
+            }
+
+            if (currSelector === '') {
+                return true && matchSingleNode(arr, node.parentNode)
+            }
+        }
+    </script>
+
+    <script>
+        // matchSelector('div.box div#child.content.inner-box', document.getElementById('child'));
+        // matchSelector('div.box #child.content.inner-box', document.getElementById('child'));
+        // matchSelector('div.box .content.inner-box', document.getElementById('child'));
+        // matchSelector('div.box div', document.getElementById('child'));
+        // matchSelector('div.box #child', document.getElementById('child'));
+        // matchSelector('div.box #childd', document.getElementById('child'));
+        // matchSelector('div.box p', document.getElementById('child'));
+        // matchSelector('div.box .content.inner-oox', document.getElementById('child'));
+        // matchSelector('div.bbox .content.inner-box', document.getElementById('child'));
+        matchSelector('div.box .content.inner-box p', document.getElementById('para'));
+    </script>
+</body>
+
+</html>

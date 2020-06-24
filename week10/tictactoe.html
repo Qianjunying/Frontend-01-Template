@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            font-size: 0;
+        }
+
+        .container {
+            display: flex;
+            width: 302px;
+            height: 302px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: green;
+            margin-bottom: 1px;
+            font-size: 24px;
+            line-height: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container"></div>
+
+    <script>
+        function renderUI() {
+            let ui = document.getElementsByClassName('container')[0];
+            ui.innerHTML = '';
+            const frag = new DocumentFragment();
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    let val = matrix[i][j];
+                    cell.innerHTML =
+                        val === 1 ? '⭕' :
+                        val === 2 ? '❌' :
+                        '';
+                    cell.addEventListener('click', () => play(i, j));
+                    frag.appendChild(cell);
+                }
+            }
+            ui.appendChild(frag);
+        }
+
+        function play(x, y) {
+            let val = matrix[x][y];
+            if (val !== 0) {
+                return;
+            }
+            matrix[x][y] = type;
+            const res = isWin(matrix, type, x, y);
+
+            if (res) {
+                alert(`${type === 1 ? '⭕' :
+                        type === 2 ? '❌' :
+                        ''} is the winner`);
+                window.location.reload();
+            }
+
+            type = 3 - type;
+
+            renderUI();
+            const testRes = isWillWin(matrix, type);
+            if (testRes) {
+                console.log(`${type === 1 ? '⭕' :
+                        type === 2 ? '❌' :
+                        ''} is about to win: just move to ${testRes}`);
+            }
+
+            if (type === 2) {
+                const preRes = bestChoice(matrix, type);
+                if (preRes && preRes.point && preRes.point.length) {
+                    console.log(
+                        `The best Choice of ❌ is move to ${preRes.point} to get a ${preRes.result===1?'win':(preRes.result==='0'?'tie':'lose')}`
+                    );
+                    setTimeout(function () {
+                        matrix[preRes.point[0]][preRes.point[1]] = type;
+                        type = 3 - type;
+                        renderUI();
+                    }, 1000)
+                }
+            }
+
+        }
+
+        function isWin(matrix, type) {
+            for (let i = 0; i < matrix.length; i++) {
+                let isWin = true;
+                for (let j = 0; j < matrix[i].length; j++) {
+                    if (matrix[i][j] !== type) {
+                        isWin = false
+                        break;
+                    }
+                }
+                if (isWin) {
+                    return true
+                }
+            }
+
+            for (let i = 0; i < matrix[0].length; i++) {
+                let isWin = true;
+                for (let j = 0; j < matrix.length; j++) {
+                    if (matrix[j][i] !== type) {
+                        isWin = false
+                        break;
+                    }
+                }
+                if (isWin) {
+                    return true
+                }
+            }
+
+            {
+                let isWin = true;
+                for (let i = 0; i < matrix.length; i++) {
+                    if (matrix[i][i] !== type) {
+                        isWin = false;
+                        break;
+                    }
+                }
+                if (isWin) {
+                    return true
+                }
+            }
+
+            {
+                let isWin = true;
+                for (let i = 0; i < matrix.length; i++) {
+                    if (matrix[i][matrix[0].length - 1 - i] !== type) {
+                        isWin = false;
+                        break;
+                    }
+                }
+                if (isWin) {
+                    return true
+                }
+            }
+        }
+
+        function init() {
+            matrix = [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0]
+            ];
+            type = 1;
+            renderUI()
+        }
+
+        function isWillWin(matrix, type) {
+            for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    if (matrix[i][j] !== 0) {
+                        continue;
+                    }
+                    const cln = JSON.parse(JSON.stringify(matrix));
+                    cln[i][j] = type;
+                    const testRes = isWin(cln, type);
+                    if (testRes) {
+                        return [i, j];
+                    }
+                }
+            }
+            return null;
+        }
+
+        function bestChoice(matrix, type) {
+            let point = isWillWin(matrix, type);
+            if (point) {
+                return {
+                    point,
+                    result: 1
+                };
+            }
+
+            let result = -1;
+            outer: for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    const p = matrix[i][j];
+                    if (p !== 0) {
+                        continue;
+                    }
+                    let cln = JSON.parse(JSON.stringify(matrix));
+                    cln[i][j] = type;
+                    let enemy = bestChoice(cln, 3 - type);
+                    if (enemy.result <= -result) {
+                        point = [i, j];
+                        result = -enemy.result
+                    }
+                    if (result === 1) {
+                        break outer;
+                    }
+                }
+
+            }
+
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+    </script>
+    <script>
+        let type = 1;
+        let matrix = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ];
+
+        renderUI()
+    </script>
+
+</body>
+
+</html>

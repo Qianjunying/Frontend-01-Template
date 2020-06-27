@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #container {
+            width: 599px;
+            height: 599px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .cell {
+            width: 5px;
+            height: 5px;
+            background-color: #ccc;
+            margin-bottom: 1px;
+            margin-right: 1px;
+        }
+
+        #container .cell:nth-of-type(100n) {
+            margin-right: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+    </div>
+    <button onclick="save()">SAVE</button>
+    <button onclick="clr()">CLEAR</button><br>
+    start-x: <input id="start-x" type="number" /> start-y: <input id="start-y" type="number" /><br />
+    end-x: <input id="end-x" type="number" /> end-y: <input id="end-y" type="number" /><br />
+    <button onclick="go()">GO</button>
+
+    <script>
+        function render(arr) {
+            let container = document.getElementById('container');
+            container.innerHTML = '';
+            let frg = new DocumentFragment();
+            for (let i = 0; i < arr.length; i++) {
+                let color = '#ccc';
+                const e = arr[i];
+                let cell = document.createElement('div');
+                cell.classList.add('cell');
+                if (e) {
+                    color = '#000';
+                }
+                cell.style.backgroundColor = color;
+
+                cell.addEventListener('mouseover', () => {
+                    if (pencil) {
+                        cell.style.backgroundColor = '#000';
+                        arr[i] = 1;
+                    }
+                    if (eraser) {
+                        cell.style.backgroundColor = '#ccc';
+                        arr[i] = 0;
+                    }
+                });
+
+                frg.appendChild(cell)
+            }
+            container.appendChild(frg);
+        }
+
+        function save() {
+            localStorage.setItem('canvas', JSON.stringify(canvas))
+        }
+
+        function clr() {
+            canvas = new Array(10000).fill(0);
+            localStorage.removeItem('canvas');
+            render(canvas);
+        }
+    </script>
+    <script>
+        class popExtremun {
+            constructor(arr, compare) {
+                this.arr = arr;
+                this.compare = compare;
+            }
+            popout() {
+                let min = this.arr[0];
+                let minIdx = 0;
+                for (let i = 1; i < this.arr.length; i++) {
+                    const x = this.arr[i];
+                    if (this.compare(min, x) > 0) {
+                        min = x;
+                        minIdx = i;
+                    }
+                }
+                this.arr[minIdx] = this.arr[this.arr.length - 1];
+                this.arr.pop();
+                return min;
+            }
+            pushIn(x) {
+                this.arr.push(x);
+            }
+            get length() {
+                return this.arr.length;
+            }
+        }
+    </script>
+    <script>
+        function go() {
+            let startX = Number(document.getElementById('start-x').value);
+            let startY = Number(document.getElementById('start-y').value);
+            let endX = Number(document.getElementById('end-x').value);
+            let endY = Number(document.getElementById('end-y').value);
+            let list = document.getElementsByClassName('cell');
+            list[startX * 100 + startY].style.backgroundColor = 'red';
+            list[endX * 100 + endY].style.backgroundColor = 'green';
+            path(canvas, [startX, startY], [endX, endY]).then(res => {
+                console.log(res);
+            });
+        }
+
+        async function path(arr, start, end) {
+            // debugger
+            if (!examSpot(start, arr[start[0] * 100 + start[1]])) {
+                return;
+            }
+            if (!examSpot(end, arr[end[0] * 100 + end[1]])) {
+                return;
+            }
+            canvas[start[0] * 100 + start[1]] = 2;
+            // canvas[end[0] * 100 + end[1]] = 2;
+
+            // let q = [start];
+            let p = new popExtremun([start], (a, b) => {
+                let aToEnd = (end[0] - a[0]) ** 2 + (end[1] - a[1]) ** 2;
+                let bToEnd = (end[0] - b[0]) ** 2 + (end[1] - b[1]) ** 2;
+                return aToEnd - bToEnd;
+            })
+            let list = document.getElementsByClassName('cell');
+            let res = [];
+            while (p.length) {
+                let passed = p.popout();
+
+                if (res = await stepOnSpot([passed[0] - 1, passed[1] + 1], end, p, passed, start,arr)) {
+                    break;
+                }
+
+                if (res = await stepOnSpot([passed[0] + 1, passed[1] + 1], end, p, passed, start,arr)) {
+                    break;
+                }
+
+                if (res = await stepOnSpot([passed[0] - 1, passed[1] + 1], end, p, passed, start,arr)) {
+                    break;
+                }
+
+
+                if (res = await stepOnSpot([passed[0] - 1, passed[1] - 1], end, p, passed, start,arr)) {
+                    break
+                }
+                if (res = await stepOnSpot([passed[0] - 1, passed[1]], end, p, passed, start,arr)) {
+                    break;
+                }
+
+                if (res = await stepOnSpot([passed[0], passed[1] + 1], end, p, passed, start,arr)) {
+                    break;
+                }
+
+                if (res = await stepOnSpot([passed[0] + 1, passed[1]], end, p, passed, start,arr)) {
+                    break;
+                }
+
+
+                if (res = await stepOnSpot([passed[0], passed[1] - 1], end, p, passed, start,arr)) {
+                    break
+                }
+            }
+            return res;
+        }
+
+        async function stepOnSpot(spot, end, p, pre, start,arr) {
+            let idx = spot[0] * 100 + spot[1];
+            if (examSpot(spot, canvas[idx])) {
+                let targetIdx = end[0] * 100 + end[1];
+
+                if (idx === targetIdx) {
+                    let res = [end];
+                    let [x, y] = pre;
+                    while (x !== start[0] || y !== start[1]) {
+                        // debugger
+                        res.push([x, y])
+                        let i = 100 * x + y;
+                        document.getElementsByClassName('cell')[i].style.backgroundColor = 'green';
+                        x = canvas[i][0];
+                        y = canvas[i][1];
+                    }
+                    return res;
+                } else {
+                    if (arr[(spot[0]) * 100 + spot[1] - 1] === 1 || arr[(spot[0] + 1) * 100 + spot[1]] === 1 || arr[
+                            (spot[0]) * 100 + spot[1] + 1] === 1 || arr[(spot[0] - 1) * 100 + spot[1]] === 1) {
+                        return null;
+                    }
+                    p.pushIn(spot);
+                    canvas[idx] = pre;
+                    document.getElementsByClassName('cell')[idx].style.backgroundColor = 'pink';
+                    await slp(1);
+                }
+
+            }
+            return null;
+        }
+
+        function slp(time) {
+            return new Promise((resolve, reject) => {
+                setTimeout(resolve, time);
+            })
+        }
+
+        function examSpot(spot, spotValue) {
+            if (spotValue !== 0) {
+                return false;
+            }
+            if (spot[0] < 0 || spot[1] < 0 || spot[0] > 99 || spot[1] > 99) {
+                return false;
+            }
+            return true;
+        }
+    </script>
+    <script>
+        let pencil = false;
+        let eraser = false;
+        document.addEventListener('mousedown', e => {
+            if (e.button === 2) {
+                eraser = true;
+            } else if (e.button === 0) {
+                pencil = true;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            pencil = false;
+            eraser = false;
+        })
+
+        let canvas = JSON.parse(localStorage.getItem('canvas')) || new Array(10000).fill(0);
+        render(canvas);
+    </script>
+</body>
+
+</html>

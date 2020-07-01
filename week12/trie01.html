@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <script>
+        class Trie {
+            constructor() {
+                this.root = new Map();
+            }
+            insert(str) {
+                let root = this.root;
+                for (const c of str) {
+                    if (!root.has(c)) {
+                        root.set(c, new Map())
+                    }
+                    root = root.get(c);
+                }
+                if (!root.has('$')) {
+                    root.set('$', 0)
+                }
+                let temp = root.get('$') + 1;
+                root.set('$', temp)
+            }
+            getMost() {
+                let m = 0;
+                let mStr = '';
+                const v = (node, c) => {
+                    if (node.has('$')) {
+                        if (node.get('$') > m) {
+                            m = node.get('$');
+                            mStr = c;
+                        }
+                        return;
+                    }
+                    for (const i of node) {                        
+                        v(i[1], c + i[0])
+                    }
+                }
+                v(this.root, '');
+                return {
+                    str: mStr,
+                    count: m
+                }
+            }
+        }
+    </script>
+    <script>
+        let t = new Trie();
+        t.insert('badd');
+        t.insert('badd');
+        t.insert('code');
+        t.insert('array');
+        console.log(t);
+        console.log(t.getMost());
+        
+    </script>
+</body>
+
+</html>

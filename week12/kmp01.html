@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function mch(src, ptn) {
+            let table = new Array(ptn.length).fill(0);
+            let k = 0;
+            for (let j = 1; j < ptn.length; j++) {
+                if (ptn[j] === ptn[k]) {
+                    k++;
+                } else {
+                    k = 0
+                }
+                table[j] = k;
+            }
+            let ptnIdx = 0;
+            for (let i = 0; i < src.length; i++) {
+                if (src[i] === ptn[ptnIdx]) {
+                    ptnIdx++;
+                } else {
+                    while (src[i] !== ptn[ptnIdx] && ptnIdx > 0) {
+                        ptnIdx = table[ptnIdx - 1];
+                    }
+
+                    if (src[i] === ptn[ptnIdx]) {
+                        ptnIdx++;
+                    } else {
+                        ptnIdx = 0;
+                    }
+                }
+                if (ptnIdx === ptn.length) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    </script>
+    <script>
+
+    </script>
+</body>
+
+</html>

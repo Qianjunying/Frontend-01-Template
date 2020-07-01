@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function* tokenize(str) {
+            let m = null;
+            let lastIdx = 0;
+            // debugger
+            do {
+                lastIdx = reg.lastIndex;
+                m = reg.exec(str);
+                if (!m) {
+                    break;
+                }
+                if (reg.lastIndex - lastIdx > m[0].length) {
+                    throw new Error(`未知字符 "${str.slice(lastIdx,reg.lastIndex-m[0].length)}"！`)
+                }
+                let y = null;
+                for (let i = 1; i < dic.length; i++) {
+                    if (m[i]) {
+                        y = {
+                            type: dic[i - 1],
+                            value: m[i]
+                        }
+                    }
+                }
+                yield y;
+            } while (m);
+
+            yield {
+                type: 'EOF'
+            }
+        }
+
+        function exp(src) {
+            if (src[0].type === 'AE' && src[1].type === 'EOF') {
+                let ele = {
+                    type: 'EXP',
+                    content: [src.shift(), src.shift()]
+                }
+                src.unshift(ele)
+                console.log(src)
+                return;
+            }
+            additiveExp(src);
+            exp(src)
+        }
+
+        function additiveExp(src) {
+            if (src[0].type === 'Number') {
+                multiplicativeExp(src)
+            }
+
+            if (src[0].type === 'ME') {
+                let ele = {
+                    type: 'AE',
+                    content: src.shift()
+                };
+                src.unshift(ele);
+            }
+
+            if (src[0].type === 'AE' && src.length > 1 && (src[1].type === '+' || src[1].type === '-')) {
+                let ele = {
+                    type: 'AE',
+                    content: [src.shift(), src.shift()]
+                };
+                multiplicativeExp(src);
+                ele.content.push(src.shift())
+                src.unshift(ele)
+            }
+
+            if (src[0].type === 'AE' && src.length > 1 && (src[1].type === '*' || src[1].type === '/' || src[1].type ===
+                    'EOF')) {
+                return;
+            }
+            additiveExp(src);
+        }
+
+        function multiplicativeExp(src) {
+            // debugger
+            if (src[0].type === 'Number') {
+                let ele = {
+                    type: 'ME',
+                    content: src.shift()
+                };
+                src.unshift(ele);
+            }
+
+            if (src[0].type === 'ME' && src.length > 1 && (src[1].type === '*' || src[1].type === '/')) {
+                let ele = {
+                    type: 'ME',
+                    content: [src.shift(), src.shift(), src.shift()]
+                };
+                src.unshift(ele)
+            }
+            if (src[0].type === 'ME' && src.length > 1 && (src[1].type === '+' || src[1].type === '-' || src[1].type ===
+                    'EOF')) {
+                return;
+            }
+            multiplicativeExp(src);
+
+        }
+    </script>
+    <script>
+        const jsStr = `1024 + 10 + 25`;
+        const reg = /(0|[1-9]\d*)|([ ]+)|([\r\n]+)|(\+)|(\-)|(\*)|(\/)/g;
+        const dic = ['Number', 'Whitespace', 'LineTerminator', '+', '-', '*', '/'];
+        const res = tokenize(jsStr);
+        let src = [];
+        for (const i of res) {
+            if (i.type === 'Whitespace' || i.type === 'LineTerminator') {
+                continue;
+            }
+            src.push(i)
+        }
+
+        exp(src);
+    </script>
+</body>
+
+</html>

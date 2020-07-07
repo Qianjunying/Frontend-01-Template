@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .color {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <input id="r" type="range" min="0" max="255"><br>
+    <input id="g" type="range" min="0" max="255"><br>
+    <input id="b" type="range" min="0" max="255">
+
+    <div class="color"></div>
+    <script>
+        let handlers = new Map();
+        let buk = [];
+
+        function rct(obj) {
+            return new Proxy(obj, {
+                get(obj, prop) {
+                    buk.push([obj, prop]);
+                    return obj[prop];
+                },
+                set(obj, prop, value) {
+                    obj[prop] = value;
+                    if (handlers.get(obj) && handlers.get(obj).get(prop)) {
+                        for (const h of handlers.get(obj).get(prop)) {
+                            h();
+                        }
+                    }
+                    handlers.get(obj.a)
+                    return obj[prop];
+                }
+            });
+        }
+
+        function eft(handler) {
+            buk = [];
+            handler();
+            for (const b of buk) {
+                let [obj, prop] = b;
+                if (!handlers.has(obj)) {
+                    handlers.set(obj, new Map());
+                }
+
+                if (!handlers.get(obj).has(prop)) {
+                    handlers.get(obj).set(prop, [])
+                }
+
+                handlers.get(obj).get(prop).push(handler)
+            }
+        }
+    </script>
+
+    <script>
+        let dmy = undefined;
+        let pxy = rct({
+            r: 0,
+            g: 0,
+            b: 0
+        });
+        let bg = '';
+
+        eft(() => {
+            document.getElementById('r').value = pxy.r;
+        });
+
+        eft(() => {
+            document.getElementById('g').value = pxy.g;
+        });
+
+        eft(() => {
+            document.getElementById('b').value = pxy.b;
+        });
+
+        eft(() => {
+            document.getElementsByClassName('color')[0].style.backgroundColor = `rgb(${pxy.r},${pxy.g},${pxy.b})`;
+        });
+        document.getElementById('r').addEventListener('input', e => {
+            pxy.r = e.target.value;
+        });
+        document.getElementById('g').addEventListener('input', e => {
+            pxy.g = e.target.value;
+        });
+        document.getElementById('b').addEventListener('input', e => {
+            pxy.b = e.target.value;
+        });
+    </script>
+</body>
+
+</html>

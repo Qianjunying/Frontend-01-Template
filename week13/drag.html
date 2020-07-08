@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #box {
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="txt">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil laudantium asperiores, eveniet sunt
+        consequuntur inventore nisi maxime sint placeat veritatis temporibus porro cum, veniam obcaecati mollitia
+        voluptatum quisquam earum, molestias dignissimos fugit qui. Maiores pariatur porro totam illo aspernatur dolore
+        dolorem voluptatem odit officiis. Nesciunt, quos, omnis quasi labore dicta illo tenetur optio enim nobis
+        consectetur sequi quis repudiandae ducimus cumque hic molestiae fuga quaerat tempora quam. Consectetur
+        temporibus adipisci esse ratione velit reprehenderit iure sequi eum voluptatem, commodi facilis cumque dolorem
+        nam autem ipsa saepe dignissimos recusandae deserunt beatae optio nisi doloremque quaerat impedit? Culpa ullam
+        earum repellendus hic!</div>
+    <div id="box"></div>
+
+    <script>
+        document.addEventListener('selectstart',e=>{
+            e.preventDefault();
+        })
+        let box = document.querySelector('#box');
+
+        let storeX = 0;
+        let storeY = 0;
+
+        box.addEventListener('mousedown', function (e) {
+            let mDownX = e.clientX;
+            let mDownY = e.clientY;
+
+            let move = function (e) {
+                // box.style.transform =
+                //     `translate(${e.clientX-mDownX+storeX}px,${e.clientY-mDownY+storeY}px)`;
+
+                let n = nearest(e.clientX, e.clientY);
+                n.insertNode(box)
+
+
+            };
+            let up = function (e) {
+                storeX += (e.clientX - mDownX);
+                storeY += (e.clientY - mDownY);                
+
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', up);
+
+            };
+
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+        });
+
+        let txtRange = [];
+        let txt = document.querySelector('#txt');
+        for (let i = 0; i < txt.childNodes[0].textContent.length; i++) {
+            let r = document.createRange();
+            r.setStart(txt.childNodes[0], i);
+            r.setEnd(txt.childNodes[0], i);
+            // console.log('r',r.getBoundingClientRect());
+            txtRange.push(r)
+        }
+
+
+        function nearest(mx, my) {
+            let nearestR = null;
+            let distance = Infinity;
+            for (const r of txtRange) {
+                let {
+                    x,
+                    y
+                } = r.getBoundingClientRect();
+                
+                let d = (x - mx) ** 2 + (y - my) ** 2;
+                if (d < distance) {
+                    distance = d;
+                    nearestR = r;
+                }
+            }
+            return nearestR;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="txt">Hello {{name}}!</div>
+
+    <script>
+        let handlers = new Map();
+        function rct(obj) {
+            return new Proxy(obj, {
+                get(obj, prop) {
+                    buk.push([obj, prop]);
+                    return obj[prop];
+                },
+                set(obj, prop, value) {
+                    obj[prop] = value;
+                    if (handlers.get(obj) && handlers.get(obj).get(prop)) {
+                        for (const h of handlers.get(obj).get(prop)) {
+                            h();
+                        }
+                    }
+                    handlers.get(obj.a)
+                    return obj[prop];
+                }
+            });
+        }
+
+        function eft(handler) {
+            buk = [];
+            handler();
+            for (const b of buk) {
+                let [obj, prop] = b;
+                if (!handlers.has(obj)) {
+                    handlers.set(obj, new Map());
+                }
+
+                if (!handlers.get(obj).has(prop)) {
+                    handlers.get(obj).set(prop, [])
+                }
+
+                handlers.get(obj).get(prop).push(handler)
+            }
+        }
+    </script>
+    <script>
+        let txt = document.querySelector('#txt');
+        let range = document.createRange();
+        range.setStart(txt.childNodes[0],6);
+        range.setEnd(txt.childNodes[0],14);
+
+        let prxy = rct({name:'Badd'});
+        eft(()=>{
+            range.extractContents();
+            range.insertNode(document.createTextNode(prxy.name))
+        })
+    </script>
+</body>
+</html>
